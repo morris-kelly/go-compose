@@ -1,4 +1,5 @@
-/* Go wrapper around Docker Compose, useful for integration testing.
+/*
+Go wrapper around Docker Compose, useful for integration testing.
 
 	var composeYML =`
 	test_mockserver:
