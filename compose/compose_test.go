@@ -51,15 +51,11 @@ func TestInferDockerHost(t *testing.T) {
 	defer os.Setenv("DOCKER_HOST", envHost)
 
 	os.Setenv("DOCKER_HOST", "")
-	if host, _ := InferDockerHost(); host != "localhost" {
+	if host := MustInferDockerHost(); host != "localhost" {
 		t.Errorf("found '%v', expected 'localhost'", host)
 	}
 	os.Setenv("DOCKER_HOST", "tcp://192.168.99.100:2376")
-	if host, _ := InferDockerHost(); host != "192.168.99.100" {
+	if host := MustInferDockerHost(); host != "192.168.99.100" {
 		t.Errorf("found '%v', expected '192.168.99.100'", host)
-	}
-	os.Setenv("DOCKER_HOST", "bad")
-	if _, err := InferDockerHost(); err == nil {
-		t.Fail()
 	}
 }

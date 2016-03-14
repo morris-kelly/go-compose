@@ -21,9 +21,18 @@ func InferDockerHost() (string, error) {
 
 	matches := dockerHostRegexp.FindAllStringSubmatch(envHost, -1)
 	if len(matches) != 1 || len(matches[0]) != 2 {
-		return "", fmt.Errorf("cannot parse DOCKER_HOST '%v'", envHost)
+		return "", fmt.Errorf("compose: cannot parse DOCKER_HOST '%v'", envHost)
 	}
 	return matches[0][1], nil
+}
+
+// MustInferDockerHost is like InferDockerHost, but panics on error.
+func MustInferDockerHost() string {
+	dockerHost, err := InferDockerHost()
+	if err != nil {
+		panic(err)
+	}
+	return dockerHost
 }
 
 func runCmd(name string, args ...string) (string, error) {
