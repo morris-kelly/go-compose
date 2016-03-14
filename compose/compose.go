@@ -19,6 +19,9 @@ Package compose provides a Go wrapper around Docker Compose, useful for integrat
 		panic(err)
 	}
 	defer compose.Kill()
+
+	postgresPort := compose.Containers["pg"].MustGetFirstPublicPort(5432, "tcp")
+	...
 */
 package compose
 
