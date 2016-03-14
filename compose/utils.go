@@ -66,8 +66,8 @@ func newMultiWriter(writers ...io.Writer) io.Writer {
 func (mw *multiWriter) Write(p []byte) (n int, err error) {
 	mw.mutex.Lock()
 	defer mw.mutex.Unlock()
-	for _, writer := range mw.writers {
-		if n, err := writer.Write(p); err != nil {
+	for i := 0; i < len(mw.writers); i++ {
+		if n, err := mw.writers[i].Write(p); err != nil {
 			return n, err
 		}
 	}
