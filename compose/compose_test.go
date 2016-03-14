@@ -26,6 +26,7 @@ bad
 func TestGoodYML(t *testing.T) {
 	compose := MustStart(goodYML, true, true)
 	defer compose.MustKill()
+
 	if compose.Containers["ms"].Name != "/ms" {
 		t.Fatalf("found name '%v', expected '/ms", compose.Containers["ms"].Name)
 	}
@@ -35,7 +36,10 @@ func TestGoodYML(t *testing.T) {
 	if port := compose.Containers["ms"].MustGetFirstPublicPort(1080, "tcp"); port != 10000 {
 		t.Fatalf("found port %v, expected 10000", port)
 	}
+}
 
+func TestRestartGoodYML(t *testing.T) {
+	TestGoodYML(t)
 }
 
 func TestBadYML(t *testing.T) {

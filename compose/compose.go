@@ -42,6 +42,10 @@ var (
 	composeUpRegexp  = regexp.MustCompile("(?m:^docker start <- \\(u'(.*)'\\)$)")
 )
 
+const (
+	composeProjectName = "compose"
+)
+
 // Start starts a Docker Compose configuration.
 // If forcePull is true, it attempts do pull newer versions of the images.
 // If rmFirst is true, it attempts to kill and delete containers before starting new ones.
@@ -87,7 +91,7 @@ func MustStart(dockerComposeYML string, forcePull, killFirst bool) *Compose {
 // Kill kills any running containers for the current configuration.
 func (c *Compose) Kill() error {
 	logger.Println("killing containers...")
-	_, err := runCmd("docker-compose", "-f", c.FileName, "kill")
+	_, err := runCompose(c.FileName, "kill")
 	if err == nil {
 		logger.Println("containers killed")
 		return nil
@@ -113,21 +117,27 @@ func replaceEnvFunc(s string) string {
 func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 	if forcePull {
 		logger.Println("pulling images...")
-		if _, err := runCmd("docker-compose", "-f", fName, "pull"); err != nil {
+		if _, err := runCompose(fName, "pull"); err != nil {
 			return nil, fmt.Errorf("compose: error pulling images: %v", err)
 		}
 	}
 
 	if rmFirst {
 		logger.Println("removing stale containers...")
-		_, err := runCmd("docker-compose", "-f", fName, "rm", "--force")
+		_, err := runCompose(fName, "kill")
 		if err != nil {
 			return nil, fmt.Errorf("compose: error killing stale containers: %v", err)
+		}
+		logger.Println("removing stale containers...")
+		_, err = runCompose(fName, "rm", "--force")
+		if err != nil {
+			return nil, fmt.Errorf("compose: error removing stale containers: %v", err)
 		}
 	}
 
 	logger.Println("starting containers...")
-	out, err := runCmd("docker-compose", "--verbose", "-f", fName, "up", "-d")
+	out, err := runCompose(fName, "--verbose", "up", "-d")
+	fmt.Println(out)
 	if err != nil {
 		return nil, fmt.Errorf("compose: error starting containers: %v", err)
 	}
@@ -140,4 +150,10 @@ func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 	}
 
 	return ids, nil
+}
+
+func runCompose(fName string, otherArgs ...string) (string, error) {
+	args := []string{"-f", fName, "-p", composeProjectName}
+	args = append(args, otherArgs...)
+	return runCmd("docker-compose", args...)
 }
