@@ -1,12 +1,12 @@
 package compose
 
 import (
-	"testing"
-	"os"
 	"bytes"
+	"os"
+	"testing"
 )
 
-var goodYML =`
+var goodYML = `
 test_mockserver:
   container_name: ms
   image: jamesdbloom/mockserver
@@ -20,7 +20,7 @@ test_postgres:
     - "5432"
 `
 
-var badYML =`
+var badYML = `
 bad
 `
 

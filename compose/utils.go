@@ -1,13 +1,13 @@
 package compose
 
 import (
-	"fmt"
-	"io/ioutil"
 	"bytes"
-	"os/exec"
-	"os"
-	"regexp"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"regexp"
 )
 
 var dockerHostRegexp = regexp.MustCompile("://([^:]+):")

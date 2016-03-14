@@ -24,10 +24,10 @@ package compose
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
-	"log"
 )
 
 // Main type exported by the package, used to interact with a running Docker Compose configuration.
@@ -37,7 +37,7 @@ type Compose struct {
 }
 
 var (
-	logger = log.New(os.Stdout, "go-compose: ", log.LstdFlags)
+	logger           = log.New(os.Stdout, "go-compose: ", log.LstdFlags)
 	replaceEnvRegexp = regexp.MustCompile("\\$\\{[^\\}]+\\}")
 	composeUpRegexp  = regexp.MustCompile("(?m:^docker start <- \\(u'(.*)'\\)$)")
 )
