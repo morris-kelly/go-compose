@@ -3,12 +3,10 @@ package compose
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
-	"sync"
 )
 
 var dockerHostRegexp = regexp.MustCompile("://([^:]+):")
@@ -28,16 +26,17 @@ func InferDockerHost() (string, error) {
 	return matches[0][1], nil
 }
 
-func runCmd(name string, args ...string) (string, string, error) {
-	var stdout, stderr, combined bytes.Buffer
+func runCmd(name string, args ...string) (string, error) {
+	var outBuf bytes.Buffer
 	cmd := exec.Command(name, args...)
-	cmd.Stdout = newMultiWriter(&stdout, &combined)
-	cmd.Stderr = newMultiWriter(&stderr, &combined)
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &outBuf
 	err := cmd.Run()
+	out := outBuf.String()
 	if err != nil {
-		fmt.Print(combined.String())
+		fmt.Print(out)
 	}
-	return stdout.String(), stderr.String(), err
+	return out, err
 }
 
 func writeTmp(content string) (string, error) {
@@ -52,24 +51,4 @@ func writeTmp(content string) (string, error) {
 	}
 
 	return f.Name(), nil
-}
-
-type multiWriter struct {
-	mutex *sync.Mutex
-	writers []io.Writer
-}
-
-func newMultiWriter(writers ...io.Writer) io.Writer {
-	return &multiWriter{mutex: &sync.Mutex{}, writers: writers}
-}
-
-func (mw *multiWriter) Write(p []byte) (n int, err error) {
-	mw.mutex.Lock()
-	defer mw.mutex.Unlock()
-	for i := 0; i < len(mw.writers); i++ {
-		if n, err := mw.writers[i].Write(p); err != nil {
-			return n, err
-		}
-	}
-	return len(p), nil
 }

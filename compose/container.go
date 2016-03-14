@@ -60,13 +60,13 @@ const (
 
 // Inspect inspects a container using the `docker inspect` command and returns a parsed version of its output.
 func Inspect(id string) (*Container, error) {
-	stdout, _, err := runCmd("docker", "inspect", id)
+	out, err := runCmd("docker", "inspect", id)
 	if err != nil {
 		return nil, fmt.Errorf("compose: error inspecting container: %v", err)
 	}
 
 	var inspect []*Container
-	if err := json.Unmarshal([]byte(stdout), &inspect); err != nil {
+	if err := json.Unmarshal([]byte(out), &inspect); err != nil {
 		return nil, fmt.Errorf("compose: error parsing inspect output: %v", err)
 	}
 	if len(inspect) != 1 {

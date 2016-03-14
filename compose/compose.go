@@ -87,7 +87,7 @@ func MustStart(dockerComposeYML string, forcePull, killFirst bool) *Compose {
 // Kill kills any running containers for the current configuration.
 func (c *Compose) Kill() error {
 	logger.Println("killing containers...")
-	_, _, err := runCmd("docker-compose", "-f", c.FileName, "kill")
+	_, err := runCmd("docker-compose", "-f", c.FileName, "kill")
 	if err == nil {
 		logger.Println("containers killed")
 		return nil
@@ -113,27 +113,27 @@ func replaceEnvFunc(s string) string {
 func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 	if forcePull {
 		logger.Println("pulling images...")
-		if _, _, err := runCmd("docker-compose", "-f", fName, "pull"); err != nil {
+		if _, err := runCmd("docker-compose", "-f", fName, "pull"); err != nil {
 			return nil, fmt.Errorf("compose: error pulling images: %v", err)
 		}
 	}
 
 	if rmFirst {
 		logger.Println("removing stale containers...")
-		_, _, err := runCmd("docker-compose", "-f", fName, "rm", "--force")
+		_, err := runCmd("docker-compose", "-f", fName, "rm", "--force")
 		if err != nil {
 			return nil, fmt.Errorf("compose: error killing stale containers: %v", err)
 		}
 	}
 
 	logger.Println("starting containers...")
-	_, stderr, err := runCmd("docker-compose", "--verbose", "-f", fName, "up", "-d")
+	out, err := runCmd("docker-compose", "--verbose", "-f", fName, "up", "-d")
 	if err != nil {
 		return nil, fmt.Errorf("compose: error starting containers: %v", err)
 	}
 	logger.Println("containers started")
 
-	matches := composeUpRegexp.FindAllStringSubmatch(stderr, -1)
+	matches := composeUpRegexp.FindAllStringSubmatch(out, -1)
 	ids := make([]string, 0, len(matches))
 	for _, match := range matches {
 		ids = append(ids, match[1])

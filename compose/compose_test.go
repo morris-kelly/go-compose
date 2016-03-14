@@ -1,7 +1,6 @@
 package compose
 
 import (
-	"bytes"
 	"os"
 	"testing"
 )
@@ -62,20 +61,5 @@ func TestInferDockerHost(t *testing.T) {
 	os.Setenv("DOCKER_HOST", "bad")
 	if _, err := InferDockerHost(); err == nil {
 		t.Fail()
-	}
-}
-
-func TestMultiWrite(t *testing.T) {
-	var w1, w2 bytes.Buffer
-	mw := newMultiWriter(&w1, &w2)
-	n, err := mw.Write([]byte("test"))
-	if err != nil || n != len("test") {
-		t.Fatalf("expected no error, got %v, %v", err, n)
-	}
-	if w1.String() != "test" {
-		t.Fatal("output not piped correctly to w1")
-	}
-	if w2.String() != "test" {
-		t.Fatal("output not piped correctly to w2")
 	}
 }
