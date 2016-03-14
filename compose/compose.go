@@ -1,3 +1,4 @@
+// Go wrapper around Docker Compose, useful for integration testing.
 package compose
 
 import (
@@ -19,6 +20,9 @@ var (
 	composeUpRegexp  = regexp.MustCompile("(?m:^docker start <- \\(u'(.*)'\\)$)")
 )
 
+// Starts a Docker Compose configuration.
+// If forcePull is true, it attempts do pull newer versions of the images.
+// If rmFirst is true, it attempts to kill and delete containers before starting new ones.
 func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 	logger.Println("initializing...")
 	dockerComposeYML = replaceEnv(dockerComposeYML)
@@ -49,6 +53,7 @@ func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 	return &Compose{FileName: fName, Containers: containers}, nil
 }
 
+// Like Start, but panics on error.
 func MustStart(dockerComposeYML string, forcePull, killFirst bool) *Compose {
 	compose, err := Start(dockerComposeYML, forcePull, killFirst)
 	if err != nil {
@@ -57,6 +62,7 @@ func MustStart(dockerComposeYML string, forcePull, killFirst bool) *Compose {
 	return compose
 }
 
+// Kills any running containers for the current configuration.
 func (c *Compose) Kill() error {
 	logger.Println("killing containers...")
 	if _, _, err := runCmd("docker-compose", "-f", c.FileName, "kill"); err == nil {
@@ -67,6 +73,7 @@ func (c *Compose) Kill() error {
 	}
 }
 
+// Like Kill, but panics on error.
 func (c *Compose) MustKill() {
 	if err := c.Kill(); err != nil {
 		panic(err)
@@ -112,5 +119,3 @@ func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 
 	return ids, nil
 }
-
-

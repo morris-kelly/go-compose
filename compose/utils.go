@@ -12,6 +12,8 @@ import (
 
 var dockerHostRegexp = regexp.MustCompile("://([^:]+):")
 
+// Returns the current docker host based on the contents of the DOCKER_HOST environment variable.
+// If DOCKER_HOST is not set, it returns "localhost".
 func InferDockerHost() (string, error) {
 	envHost := os.Getenv("DOCKER_HOST")
 	if len(envHost) == 0 {
