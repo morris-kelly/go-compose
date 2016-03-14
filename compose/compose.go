@@ -9,6 +9,7 @@ import (
 	"log"
 )
 
+// Main type exported by the package, used to interact with a running Docker Compose configuration.
 type Compose struct {
 	FileName   string
 	Containers map[string]*Container
