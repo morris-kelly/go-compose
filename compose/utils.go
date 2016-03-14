@@ -8,11 +8,12 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sync"
 )
 
 var dockerHostRegexp = regexp.MustCompile("://([^:]+):")
 
-// Returns the current docker host based on the contents of the DOCKER_HOST environment variable.
+// InferDockerHost returns the current docker host based on the contents of the DOCKER_HOST environment variable.
 // If DOCKER_HOST is not set, it returns "localhost".
 func InferDockerHost() (string, error) {
 	envHost := os.Getenv("DOCKER_HOST")
@@ -54,14 +55,17 @@ func writeTmp(content string) (string, error) {
 }
 
 type multiWriter struct {
+	mutex *sync.Mutex
 	writers []io.Writer
 }
 
 func newMultiWriter(writers ...io.Writer) io.Writer {
-	return &multiWriter{writers: writers}
+	return &multiWriter{mutex: &sync.Mutex{}, writers: writers}
 }
 
 func (mw *multiWriter) Write(p []byte) (n int, err error) {
+	mw.mutex.Lock()
+	defer mw.mutex.Unlock()
 	for _, writer := range mw.writers {
 		if n, err := writer.Write(p); err != nil {
 			return n, err

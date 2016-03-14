@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Models the `docker inspect` command output.
+// Container models the `docker inspect` command output.
 type Container struct {
 	ID              string           `json:"Id"`
 	Name            string           `json:"Name,omitempty"`
@@ -19,7 +19,7 @@ type Container struct {
 	NetworkSettings *NetworkSettings `json:"NetworkSettings,omitempty"`
 }
 
-// Models the config section of the `docker inspect` command output.
+// Config models the config section of the `docker inspect` command output.
 type Config struct {
 	Hostname     string              `json:"Hostname,omitempty"`
 	ExposedPorts map[string]struct{} `json:"ExposedPorts,omitempty"`
@@ -29,7 +29,7 @@ type Config struct {
 	Labels       map[string]string   `json:"Labels,omitempty"`
 }
 
-// Models the state section of the `docker inspect` command.
+// State models the state section of the `docker inspect` command.
 type State struct {
 	Running    bool      `json:"Running,omitempty"`
 	Paused     bool      `json:"Paused,omitempty"`
@@ -42,30 +42,30 @@ type State struct {
 	FinishedAt time.Time `json:"FinishedAt,omitempty"`
 }
 
-// Models the network settings section of the `docker inspect` command.
+// NetworkSettings models the network settings section of the `docker inspect` command.
 type NetworkSettings struct {
 	Ports map[string][]PortBinding `json:"Ports,omitempty"`
 }
 
-// Models a port binding in the network settings section of the `docker inspect command.
+// PortBinding models a port binding in the network settings section of the `docker inspect command.
 type PortBinding struct {
 	HostIP   string `json:"HostIP,omitempty"`
 	HostPort string `json:"HostPort,omitempty"`
 }
 
 const (
-	DefaultRetryCount = 10                     // Default number of retries for the Connect operation.
-	DefaultRetryDelay = 500 * time.Millisecond // Default delay between retries for the Connect operation.
+	defaultRetryCount = 10
+	defaultRetryDelay = 500 * time.Millisecond
 )
 
-// Inspects a container using the `docker inspect` command and returns a parsed version of its output.
+// Inspect inspects a container using the `docker inspect` command and returns a parsed version of its output.
 func Inspect(id string) (*Container, error) {
 	stdout, _, err := runCmd("docker", "inspect", id)
 	if err != nil {
 		return nil, fmt.Errorf("compose: error inspecting container: %v", err)
 	}
 
-	inspect := make([]*Container, 0)
+	var inspect []*Container
 	if err := json.Unmarshal([]byte(stdout), &inspect); err != nil {
 		return nil, fmt.Errorf("compose: error parsing inspect output: %v", err)
 	}
@@ -76,7 +76,7 @@ func Inspect(id string) (*Container, error) {
 	return inspect[0], nil
 }
 
-// Like Inspect, but panics on error.
+// MustInspect is like Inspect, but panics on error.
 func MustInspect(id string) *Container {
 	container, err := Inspect(id)
 	if err != nil {
@@ -85,7 +85,7 @@ func MustInspect(id string) *Container {
 	return container
 }
 
-// Attempts to connect to a container using the given connector function.
+// Connect attempts to connect to a container using the given connector function.
 // The given exposedPort is automatically mapped to the corresponding public port.
 // Use retryCount and retryDelay to configure the number of retries and the time waited between them
 func (c *Container) Connect(exposedPort uint32, proto string, retryCount int, retryDelay time.Duration, connector func(publicPort uint32) error) error {
@@ -105,26 +105,26 @@ func (c *Container) Connect(exposedPort uint32, proto string, retryCount int, re
 	return err
 }
 
-// Like Connect, but panics on error.
+// MustConnect is like Connect, but panics on error.
 func (c *Container) MustConnect(exposedPort uint32, proto string, retryCount int, retryDelay time.Duration, connector func(publicPort uint32) error) {
 	if err := c.Connect(exposedPort, proto, retryCount, retryDelay, connector); err != nil {
 		panic(err)
 	}
 }
 
-// Like Connect, with default values for retryCount and retryDelay.
+// ConnectWithDefaults is like connect, with default values for retryCount and retryDelay.
 func (c *Container) ConnectWithDefaults(exposedPort uint32, proto string, connector func(publicPort uint32) error) error {
-	return c.Connect(exposedPort, proto, DefaultRetryCount, DefaultRetryDelay, connector)
+	return c.Connect(exposedPort, proto, defaultRetryCount, defaultRetryDelay, connector)
 }
 
-// Like ConnectWithDefaults, but panics on error.
+// MustConnectWithDefaults is like ConnectWithDefaults, but panics on error.
 func (c *Container) MustConnectWithDefaults(exposedPort uint32, proto string, connector func(publicPort uint32) error) {
 	if err := c.ConnectWithDefaults(exposedPort, proto, connector); err != nil {
 		panic(err)
 	}
 }
 
-// If found, returns the first public public port mapped to the given exposedPort, for the given proto ("tcp", "udp", etc.).
+// GetFirstPublicPort returns the first public public port mapped to the given exposedPort, for the given proto ("tcp", "udp", etc.), if found.
 func (c *Container) GetFirstPublicPort(exposedPort uint32, proto string) (uint32, error) {
 	if c.NetworkSettings == nil {
 		return 0, fmt.Errorf("compose: no network settings for container '%v'", c.Name)
@@ -144,7 +144,7 @@ func (c *Container) GetFirstPublicPort(exposedPort uint32, proto string) (uint32
 	return uint32(port), nil
 }
 
-// Like GetFirstPublicPort, but panics on error.
+// MustGetFirstPublicPort is like GetFirstPublicPort, but panics on error.
 func (c *Container) MustGetFirstPublicPort(exposedPort uint32, proto string) uint32 {
 	port, err := c.GetFirstPublicPort(exposedPort, proto)
 	if err != nil {
