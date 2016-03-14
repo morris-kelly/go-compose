@@ -1,4 +1,24 @@
-// Go wrapper around Docker Compose, useful for integration testing.
+/* Go wrapper around Docker Compose, useful for integration testing.
+
+	var composeYML =`
+	test_mockserver:
+	  container_name: ms
+	  image: jamesdbloom/mockserver
+	  ports:
+	    - "10000:1080"
+	    - "1090"
+	test_postgres:
+	  container_name: pg
+	  image: postgres
+	  ports:
+	    - "5432"
+
+	compose, err := compose.Start(composeYML, true, true)
+	if err != nil {
+		panic(err)
+	}
+	defer compose.Kill()
+*/
 package compose
 
 import (
