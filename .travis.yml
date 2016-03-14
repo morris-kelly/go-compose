@@ -1,0 +1,16 @@
+sudo: required
+language: go
+
+go:
+  - 1.4
+  - 1.5
+  - 1.6
+
+services:
+  - docker
+
+script: go test -v github.com/ibrt/go-compose/compose
+
+after_failure:
+  - docker logs ms
+  - docker logs pg
