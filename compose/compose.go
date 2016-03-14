@@ -137,7 +137,6 @@ func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 
 	logger.Println("starting containers...")
 	out, err := runCompose(fName, "--verbose", "up", "-d")
-	fmt.Println(out)
 	if err != nil {
 		return nil, fmt.Errorf("compose: error starting containers: %v", err)
 	}
