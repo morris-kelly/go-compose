@@ -53,11 +53,6 @@ type PortBinding struct {
 	HostPort string `json:"HostPort,omitempty"`
 }
 
-const (
-	defaultRetryCount     = 10
-	defaultBaseRetryDelay = 100 * time.Millisecond
-)
-
 // Inspect inspects a container using the `docker inspect` command and returns a parsed version of its output.
 func Inspect(id string) (*Container, error) {
 	out, err := runCmd("docker", "inspect", id)
@@ -83,46 +78,6 @@ func MustInspect(id string) *Container {
 		panic(err)
 	}
 	return container
-}
-
-// Connect attempts to connect to a container using the given connector function.
-// The given exposedPort is automatically mapped to the corresponding public port.
-// Use retryCount and retryDelay to configure the number of retries and the time waited between them (using exponential backoff).
-func (c *Container) Connect(exposedPort uint32, proto string, retryCount int, baseRetryDelay time.Duration, connector func(publicPort uint32) error) error {
-	publicPort, err := c.GetFirstPublicPort(exposedPort, proto)
-	if err != nil {
-		return err
-	}
-
-	for i := 0; i < retryCount; i++ {
-		err = connector(publicPort)
-		if err == nil {
-			return nil
-		}
-		time.Sleep(baseRetryDelay)
-		baseRetryDelay *= 2
-	}
-
-	return err
-}
-
-// MustConnect is like Connect, but panics on error.
-func (c *Container) MustConnect(exposedPort uint32, proto string, retryCount int, baseRetryDelay time.Duration, connector func(publicPort uint32) error) {
-	if err := c.Connect(exposedPort, proto, retryCount, baseRetryDelay, connector); err != nil {
-		panic(err)
-	}
-}
-
-// ConnectWithDefaults is like connect, with default values for retryCount and retryDelay.
-func (c *Container) ConnectWithDefaults(exposedPort uint32, proto string, connector func(publicPort uint32) error) error {
-	return c.Connect(exposedPort, proto, defaultRetryCount, defaultBaseRetryDelay, connector)
-}
-
-// MustConnectWithDefaults is like ConnectWithDefaults, but panics on error.
-func (c *Container) MustConnectWithDefaults(exposedPort uint32, proto string, connector func(publicPort uint32) error) {
-	if err := c.ConnectWithDefaults(exposedPort, proto, connector); err != nil {
-		panic(err)
-	}
 }
 
 // GetFirstPublicPort returns the first public public port mapped to the given exposedPort, for the given proto ("tcp", "udp", etc.), if found.

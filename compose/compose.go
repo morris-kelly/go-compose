@@ -131,7 +131,7 @@ func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("compose: error killing stale containers: %v", err)
 		}
-		logger.Println("removing stale containers...")
+		logger.Println("killing stale containers...")
 		_, err = runCompose(fName, "rm", "--force")
 		if err != nil {
 			return nil, fmt.Errorf("compose: error removing stale containers: %v", err)

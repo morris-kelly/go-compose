@@ -1,6 +1,8 @@
 package compose
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -50,7 +52,7 @@ func TestBadYML(t *testing.T) {
 	}
 }
 
-func TestInferDockerHost(t *testing.T) {
+func TestMustInferDockerHost(t *testing.T) {
 	envHost := os.Getenv("DOCKER_HOST")
 	defer os.Setenv("DOCKER_HOST", envHost)
 
@@ -62,4 +64,24 @@ func TestInferDockerHost(t *testing.T) {
 	if host := MustInferDockerHost(); host != "192.168.99.100" {
 		t.Errorf("found '%v', expected '192.168.99.100'", host)
 	}
+}
+
+func TestMustConnectWithDefaults(t *testing.T) {
+	compose := MustStart(goodYML, true, true)
+	defer compose.MustKill()
+
+	mockServerURL := fmt.Sprintf("http://%v:%v", MustInferDockerHost(), compose.Containers["ms"].MustGetFirstPublicPort(1080, "tcp"))
+
+	MustConnectWithDefaults(func() error {
+		logger.Print("attempting to connect to mockserver...")
+		req, err := http.NewRequest("PUT", mockServerURL, nil)
+		if err != nil {
+			return err
+		}
+		_, err = http.DefaultClient.Do(req)
+		if err == nil {
+			logger.Print("connected to mockserver")
+		}
+		return err
+	})
 }
