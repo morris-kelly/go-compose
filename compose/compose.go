@@ -8,7 +8,7 @@ Package compose provides a Go wrapper around Docker Compose, useful for integrat
 	  image: jamesdbloom/mockserver
 	  ports:
 	    - "10000:1080"
-	    - "1090"
+	    - "${SOME_ENV_VAR}" # This is replaced with the value of SOME_ENV_VAR.
 	test_postgres:
 	  container_name: pg
 	  image: postgres
@@ -74,7 +74,7 @@ func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 		return nil, err
 	}
 
-	ids, err := startCompose(fName, forcePull, rmFirst)
+	ids, err := composeStart(fName, forcePull, rmFirst)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +106,7 @@ func MustStart(dockerComposeYML string, forcePull, killFirst bool) *Compose {
 
 // Kill kills any running containers for the current configuration.
 func (c *Compose) Kill() error {
-	logger.Println("killing containers...")
-	_, err := runCompose(c.fileName, "kill")
-	if err == nil {
-		logger.Println("containers killed")
-		return nil
-	}
-	return fmt.Errorf("compose: error killing containers: %v", err)
+	return composeKill(c.fileName)
 }
 
 // MustKill is like Kill, but panics on error.
@@ -130,29 +124,25 @@ func replaceEnvFunc(s string) string {
 	return os.Getenv(strings.TrimSpace(s[2 : len(s)-1]))
 }
 
-func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
+func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
 	if forcePull {
 		logger.Println("pulling images...")
-		if _, err := runCompose(fName, "pull"); err != nil {
+		if _, err := composeRun(fName, "pull"); err != nil {
 			return nil, fmt.Errorf("compose: error pulling images: %v", err)
 		}
 	}
 
 	if rmFirst {
-		logger.Println("removing stale containers...")
-		_, err := runCompose(fName, "kill")
-		if err != nil {
-			return nil, fmt.Errorf("compose: error killing stale containers: %v", err)
+		if err := composeKill(fName); err != nil {
+			return nil, err
 		}
-		logger.Println("killing stale containers...")
-		_, err = runCompose(fName, "rm", "--force")
-		if err != nil {
-			return nil, fmt.Errorf("compose: error removing stale containers: %v", err)
+		if err := composeRm(fName); err != nil {
+			return nil, err
 		}
 	}
 
 	logger.Println("starting containers...")
-	out, err := runCompose(fName, "--verbose", "up", "-d")
+	out, err := composeRun(fName, "--verbose", "up", "-d")
 	if err != nil {
 		return nil, fmt.Errorf("compose: error starting containers: %v", err)
 	}
@@ -167,7 +157,25 @@ func startCompose(fName string, forcePull, rmFirst bool) ([]string, error) {
 	return ids, nil
 }
 
-func runCompose(fName string, otherArgs ...string) (string, error) {
+func composeKill(fName string) error {
+	logger.Println("killing stale containers...")
+	_, err := composeRun(fName, "kill")
+	if err != nil {
+		return fmt.Errorf("compose: error killing stale containers: %v", err)
+	}
+	return err
+}
+
+func composeRm(fName string) error {
+	logger.Println("removing stale containers...")
+	_, err := composeRun(fName, "rm", "--force")
+	if err != nil {
+		return fmt.Errorf("compose: error removing stale containers: %v", err)
+	}
+	return err
+}
+
+func composeRun(fName string, otherArgs ...string) (string, error) {
 	args := []string{"-f", fName, "-p", composeProjectName}
 	args = append(args, otherArgs...)
 	return runCmd("docker-compose", args...)

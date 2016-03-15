@@ -16,7 +16,7 @@ test_mockserver:
   image: jamesdbloom/mockserver
   ports:
     - "10000:1080"
-    - "1090"
+    - "${SOME_ENV_VAR}" # This is replaced with the value of SOME_ENV_VAR.
 test_postgres:
   container_name: pg
   image: postgres
