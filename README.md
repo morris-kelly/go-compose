@@ -22,13 +22,14 @@ test_postgres:
   image: postgres
   ports:
     - "5432"
+`
 
 // Start containers.
 c, err := compose.Start(composeYML, true, true)
 if err != nil {
     panic(err)
 }
-defer compose.Kill()
+defer c.Kill()
 
 // Build MockServer public URL.
 mockServerURL := fmt.Sprintf(

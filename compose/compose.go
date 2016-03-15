@@ -21,7 +21,7 @@ Package compose provides a Go wrapper around Docker Compose, useful for integrat
 	if err != nil {
 		panic(err)
 	}
-	defer compose.Kill()
+	defer c.Kill()
 
 	// Build MockServer public URL.
 	mockServerURL := fmt.Sprintf(
