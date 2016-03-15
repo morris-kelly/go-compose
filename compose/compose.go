@@ -14,6 +14,7 @@ Package compose provides a Go wrapper around Docker Compose, useful for integrat
 	  image: postgres
 	  ports:
 	    - "5432"
+	`
 
 	// Start containers.
 	c, err := compose.Start(composeYML, true, true)
