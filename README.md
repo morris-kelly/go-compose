@@ -9,6 +9,7 @@ Go wrapper around Docker Compose, useful for integration testing.
 Example:
 
 ```go
+// Define Compose config.
 var composeYML =`
 test_mockserver:
   container_name: ms
@@ -20,11 +21,24 @@ test_postgres:
   container_name: pg
   image: postgres
   ports:
-    - "5432"`
+    - "5432"
 
-compose, err := compose.Start(composeYML, true, true)
+// Start containers.
+c, err := compose.Start(composeYML, true, true)
 if err != nil {
-	panic(err)
+    panic(err)
 }
 defer compose.Kill()
+
+// Build MockServer public URL.
+mockServerURL := fmt.Sprintf(
+    "http://%v:%v",
+    compose.MustInferDockerHost(),
+    c.Containers["ms"].MustGetFirstPublicPort(1080, "tcp"))
+
+// Wait for MockServer to start accepting connections.
+MustConnectWithDefaults(func() error {
+    _, err := http.Get(mockServerURL)
+    return err
+})
 ```

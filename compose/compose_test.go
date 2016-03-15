@@ -74,11 +74,7 @@ func TestMustConnectWithDefaults(t *testing.T) {
 
 	MustConnectWithDefaults(func() error {
 		logger.Print("attempting to connect to mockserver...")
-		req, err := http.NewRequest("PUT", mockServerURL, nil)
-		if err != nil {
-			return err
-		}
-		_, err = http.DefaultClient.Do(req)
+		_, err := http.Get(mockServerURL)
 		if err == nil {
 			logger.Print("connected to mockserver")
 		}
