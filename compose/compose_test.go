@@ -48,7 +48,7 @@ func TestBadYML(t *testing.T) {
 	compose, err := Start(badYML, true, true)
 	if err == nil {
 		defer compose.MustKill()
-		t.FailNow()
+		t.Error("expected error")
 	}
 }
 
@@ -80,4 +80,21 @@ func TestMustConnectWithDefaults(t *testing.T) {
 		}
 		return err
 	})
+}
+
+func TestInspectUnknownContainer(t *testing.T) {
+	_, err := Inspect("bad")
+	if err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestMustInspect(t *testing.T) {
+	compose := MustStart(goodYML, true, true)
+	defer compose.MustKill()
+
+	ms := MustInspect(compose.Containers["ms"].ID)
+	if ms.Name != "/ms" {
+		t.Errorf("found '%v', expected '/ms", ms.Name)
+	}
 }
