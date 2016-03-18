@@ -1,6 +1,7 @@
 # go-compose
 
 [![Build Status](https://api.travis-ci.org/ibrt/go-compose.svg?branch=master)](https://travis-ci.org/ibrt/go-compose?branch=master)
+[![Circle CI](https://circleci.com/gh/ibrt/go-compose.png?style=shield)](https://circleci.com/gh/ibrt/go-compose)
 [![Coverage Status](https://coveralls.io/repos/github/ibrt/go-compose/badge.svg?branch=master)](https://coveralls.io/github/ibrt/go-compose?branch=master)
 [![GoDoc](https://godoc.org/github.com/ibrt/go-compose/compose?status.svg)](https://godoc.org/github.com/ibrt/go-compose/compose)
 
