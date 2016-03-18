@@ -80,14 +80,7 @@ func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 		return nil, err
 	}
 
-	fmt.Printf("IDS %#v\n", ids)
-
 	containers := make(map[string]*Container)
-
-	cmd := exec.Command("docker", "ps")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Run()
 
 	for _, id := range ids {
 		container, err := Inspect(id)
@@ -156,11 +149,8 @@ func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
 	}
 	logger.Println("containers started")
 
-	cmd := exec.Command("docker", "ps")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-	
+	fmt.Printf("XXX\n%v\n----", out)
+
 	matches := composeUpRegexp.FindAllStringSubmatch(out, -1)
 	ids := make([]string, 0, len(matches))
 	for _, match := range matches {
