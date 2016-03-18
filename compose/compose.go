@@ -148,8 +148,6 @@ func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
 	}
 	logger.Println("containers started")
 
-	fmt.Printf("XXX\n%v\n----", out)
-
 	matches := composeUpRegexp.FindAllStringSubmatch(out, -1)
 	ids := make([]string, 0, len(matches))
 	for _, match := range matches {

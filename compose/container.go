@@ -60,8 +60,6 @@ func Inspect(id string) (*Container, error) {
 		return nil, fmt.Errorf("compose: error inspecting container: %v", err)
 	}
 
-	fmt.Printf("------XXX\n%v\n------\n", out)
-
 	var inspect []*Container
 	if err := json.Unmarshal([]byte(out), &inspect); err != nil {
 		return nil, fmt.Errorf("compose: error parsing inspect output: %v", err)
