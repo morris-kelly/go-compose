@@ -55,7 +55,7 @@ type Compose struct {
 var (
 	logger           = log.New(os.Stdout, "go-compose: ", log.LstdFlags)
 	replaceEnvRegexp = regexp.MustCompile("\\$\\{[^\\}]+\\}")
-	composeUpRegexp  = regexp.MustCompile("(?m:^docker start <- \\(u'(.*)'\\)$)")
+	composeUpRegexp  = regexp.MustCompile("(?m:docker start <- \\(u'(.*)'\\)$)")
 )
 
 const (
