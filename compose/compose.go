@@ -44,6 +44,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"os/exec"
 )
 
 // Compose is the main type exported by the package, used to interact with a running Docker Compose configuration.
@@ -80,6 +81,11 @@ func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 	}
 
 	containers := make(map[string]*Container)
+
+	cmd := exec.Command("docker", "ps")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 
 	for _, id := range ids {
 		container, err := Inspect(id)
