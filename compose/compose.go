@@ -80,6 +80,8 @@ func Start(dockerComposeYML string, forcePull, rmFirst bool) (*Compose, error) {
 		return nil, err
 	}
 
+	fmt.Printf("IDS %#v\n", ids)
+
 	containers := make(map[string]*Container)
 
 	cmd := exec.Command("docker", "ps")
