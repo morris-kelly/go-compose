@@ -23,7 +23,7 @@ dependencies:
     - if [[ -e ~/cache/docker-postgres.tar ]]; then docker load -i ~/cache/docker-postgres.tar; fi
     - docker pull postgres
     - docker save postgres > ~/cache/docker-postgres.tar
-override:
+ override:
     # Copy repository to GOPATH.
     - rsync -azC --delete ./ "$PRIVATE_GOPATH/src/$IMPORT_PATH/"
 test:
