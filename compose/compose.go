@@ -124,10 +124,10 @@ func replaceEnvFunc(s string) string {
 	return os.Getenv(strings.TrimSpace(s[2 : len(s)-1]))
 }
 
-func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
+func composeStart(fName string, pathToRun string, forcePull, rmFirst bool) ([]string, error) {
 	if forcePull {
 		logger.Println("pulling images...")
-		if _, err := composeRun(fName, "pull"); err != nil {
+		if _, err := composeRun(fName, pathToRun, "pull"); err != nil {
 			return nil, fmt.Errorf("compose: error pulling images: %v", err)
 		}
 	}
@@ -142,7 +142,8 @@ func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
 	}
 
 	logger.Println("starting containers...")
-	out, err := composeRun(fName, "--verbose", "up", "-d")
+
+	out, err := composeRun(fName, pathToRun, "--verbose", "up", "-d")
 	if err != nil {
 		return nil, fmt.Errorf("compose: error starting containers: %v", err)
 	}
@@ -159,7 +160,8 @@ func composeStart(fName string, forcePull, rmFirst bool) ([]string, error) {
 
 func composeKill(fName string) error {
 	logger.Println("killing stale containers...")
-	_, err := composeRun(fName, "kill")
+	dir, _ := os.Getwd()
+	_, err := composeRun(fName, dir, "kill")
 	if err != nil {
 		return fmt.Errorf("compose: error killing stale containers: %v", err)
 	}
@@ -168,15 +170,16 @@ func composeKill(fName string) error {
 
 func composeRm(fName string) error {
 	logger.Println("removing stale containers...")
-	_, err := composeRun(fName, "rm", "--force")
+	dir, _ := os.Getwd()
+	_, err := composeRun(fName, dir, "rm", "--force")
 	if err != nil {
 		return fmt.Errorf("compose: error removing stale containers: %v", err)
 	}
 	return err
 }
 
-func composeRun(fName string, otherArgs ...string) (string, error) {
+func composeRun(fName string, pathToRun string, otherArgs ...string) (string, error) {
 	args := []string{"-f", fName, "-p", composeProjectName}
 	args = append(args, otherArgs...)
-	return runCmd("docker-compose", args...)
+	return runCmd("docker-compose", pathToRun, args...)
 }

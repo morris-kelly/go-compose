@@ -3,6 +3,7 @@ package compose
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -55,7 +56,8 @@ type PortBinding struct {
 
 // Inspect inspects a container using the `docker inspect` command and returns a parsed version of its output.
 func Inspect(id string) (*Container, error) {
-	out, err := runCmd("docker", "inspect", id)
+	dir, _ := os.Getwd()
+	out, err := runCmd("docker", dir, "inspect", id)
 	if err != nil {
 		return nil, fmt.Errorf("compose: error inspecting container: %v", err)
 	}

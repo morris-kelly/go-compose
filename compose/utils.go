@@ -35,9 +35,10 @@ func MustInferDockerHost() string {
 	return dockerHost
 }
 
-func runCmd(name string, args ...string) (string, error) {
+func runCmd(name string, pathToRun string, args ...string) (string, error) {
 	var outBuf bytes.Buffer
 	cmd := exec.Command(name, args...)
+	cmd.Dir = pathToRun
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &outBuf
 	err := cmd.Run()
